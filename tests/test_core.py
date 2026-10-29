@@ -12,6 +12,16 @@ def test_tokenize() -> None:
     assert tokenize("The cat, the dog!") == ["the", "cat", "the", "dog"]
 
 
+def test_tokenize_preserves_unicode_digits_and_underscores() -> None:
+    # Regression: an ASCII-only [a-z]+ tokenizer silently dropped accented text,
+    # non-Latin scripts, digits, and underscored identifiers.
+    assert tokenize("café") == ["café"]
+    assert tokenize("word_embedding") == ["word_embedding"]
+    assert tokenize("word2vec") == ["word2vec"]
+    assert tokenize("東京") == ["東京"]
+    assert tokenize("covid19 Rocket_Launch") == ["covid19", "rocket_launch"]
+
+
 def test_vocabulary_frequency_order_and_min_count() -> None:
     vocab = Vocabulary(["a", "a", "a", "b", "b", "c"], min_count=2)
     assert "c" not in vocab
@@ -66,3 +76,11 @@ def test_config_validation() -> None:
 def test_cosine_identity() -> None:
     assert cosine([1.0, 0.0], [1.0, 0.0]) == pytest.approx(1.0)
     assert cosine([1.0, 0.0], [0.0, 1.0]) == pytest.approx(0.0)
+
+
+def test_cosine_is_stable_for_large_magnitudes() -> None:
+    # Regression: norm(a) * norm(b) overflowed to inf for very large vectors,
+    # bypassing the zero guard and returning nan.
+    assert cosine([1e200, 1e200], [1e200, 1e200]) == pytest.approx(1.0)
+    assert cosine([1e200, 0.0], [0.0, 1e200]) == pytest.approx(0.0)
+    assert cosine([1e-200, 2e-200], [2e-200, 4e-200]) == pytest.approx(1.0)
