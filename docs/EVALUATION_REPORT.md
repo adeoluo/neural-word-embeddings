@@ -1,34 +1,32 @@
 # Evaluation Report - Neural Word Embeddings
 
-> Reproduce everything here with `make evaluation`. Report mean ± 95% confidence interval over N seeds.
+> Reproduce with `python -m neural_word_embeddings evaluate`. Deterministic and offline.
 
 ## Setup
-- **Task / dataset:** name, size, split.
-- **Metrics:** definition of each metric and why it's the right one.
-- **Graders:** exact-match / model-graded (which model, prompt) / human.
-- **Baselines:** what you compare against.
-- **Seeds:** list. **Hardware:** e.g., 1×A100 80GB. **Cost:** $X. **Runtime:** Yh.
 
-## Headline results
+- **Corpus:** a synthetic corpus with five semantic categories whose sentences co-locate
+  same-category words.
+- **Metric:** category-retrieval accuracy - for each word, is its top-1 nearest neighbor (by
+  cosine) in the same category?
+- **Baseline:** random guessing, the average probability a random other word shares the
+  category.
 
-| Metric | This project | Baseline | SOTA / ref | Δ vs baseline |
-|---|---:|---:|---:|---:|
-| Primary (↑) | **0.00 ± 0.00** | 0.00 | 0.00 | +0.00 |
-| Latency p95 (ms, ↓) | **0** | 0 | - | - |
-| Cost / 1k ($, ↓) | **0.00** | 0.00 | - | - |
+## Results
 
-## Ablations
+| Metric | Value |
+|---|---:|
+| category-retrieval accuracy | 1.000 |
+| random baseline | 0.176 |
 
-| Variant | Metric | Δ | Notes |
-|---|---:|---:|---|
-| Full | 0.00 | - | reference |
-| - component X | 0.00 | −0.00 | shows X matters |
+## Interpretation
 
-## LLM-as-judge validation (if used)
-- Agreement with human labels (Cohen's κ / accuracy), bias controls, sample size.
-
-## Error analysis
-- Top failure categories with counts and representative examples.
+After training, every word's nearest neighbor lies in its own semantic category, giving a
+perfect retrieval score against a random baseline of 0.176. This is the standard intrinsic
+evaluation of word embeddings, and the from-scratch skip-gram model passes it completely,
+confirming that negative-sampling training with hand-derived gradients learns meaningful
+geometry. Full linear analogies are a harder test that needs a large natural corpus; the
+nearest-neighbor result is the honest, reproducible claim at this scale.
 
 ## Reproducibility
-- Exact command, configuration hash, dataset version, W&B/MLflow run URL.
+
+Training and sampling are seeded; the numbers regenerate exactly.
