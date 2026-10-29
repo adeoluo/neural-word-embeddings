@@ -1,27 +1,37 @@
-# Model / System Card - Neural Word Embeddings
+# System Card - Neural Word Embeddings
 
 ## Overview
-- **What it is:** 1 - 2 sentences.
-- **Base model(s):** e.g., Claude 3.5 Sonnet / GPT-4o / Llama-3-8B / from-scratch.
-- **Version & date:**
+
+- **What it is:** a skip-gram word-embedding model with negative sampling, trained from
+  scratch, with similarity, nearest-neighbor, and analogy queries.
+- **What it is not:** a contextual language model; each word has one static vector.
+- **Version:** 0.1.0.
 
 ## Intended use
-- **Primary use cases:**
-- **Primary users:**
+
+- **Primary use cases:** learning how word embeddings are trained; computing static word
+  vectors for small corpora.
+- **Primary users:** engineers and students studying representation learning.
 
 ## Out-of-scope / prohibited use
-- Where this should **not** be used, and why.
+
+- Not for web-scale corpora (pure-Python training).
+- Out-of-vocabulary words are unsupported.
 
 ## Performance
-- Summary of key metrics (link to [`EVALUATION_REPORT.md`](EVALUATION_REPORT.md)).
-- Known performance disparities across inputs / subgroups.
 
-## Risks & limitations
-- Failure modes, biases, hallucination behavior, brittleness.
-- **Dual-use / misuse considerations.**
+See the README: 1.000 category-retrieval accuracy against a 0.176 random baseline on the
+bundled corpus.
+
+## Risks and limitations
+
+- Static embeddings cannot disambiguate word senses.
+- Full linear analogies need a larger natural corpus.
 
 ## Safety mitigations
-- Guardrails, filtering, human-in-the-loop, abstention behavior.
+
+- Deterministic under a fixed seed; offline; bounded query parameters in the service.
 
 ## Environmental / cost footprint
-- Compute used; approximate cost / energy where relevant.
+
+Negligible; all in-memory, trained in well under a second on the bundled corpus.

@@ -43,6 +43,12 @@ def _cmd_analogy(args: argparse.Namespace) -> None:
         print(f"  {word:<12} {score:.3f}")
 
 
+def _cmd_serve(args: argparse.Namespace) -> None:
+    from neural_word_embeddings.service import serve
+
+    serve(host=args.host, port=args.port)
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(prog="neural-word-embeddings", description=__doc__)
     parser.add_argument("--epochs", type=int, default=15)
@@ -62,7 +68,16 @@ def main(argv: list[str] | None = None) -> None:
     analogy.add_argument("c")
     analogy.add_argument("--k", type=int, default=3)
 
-    handlers = {"evaluate": _cmd_evaluate, "similar": _cmd_similar, "analogy": _cmd_analogy}
+    serve = sub.add_parser("serve", help="start the HTTP embedding service")
+    serve.add_argument("--host", default="127.0.0.1")
+    serve.add_argument("--port", type=int, default=8000)
+
+    handlers = {
+        "evaluate": _cmd_evaluate,
+        "similar": _cmd_similar,
+        "analogy": _cmd_analogy,
+        "serve": _cmd_serve,
+    }
     args = parser.parse_args(argv)
     handlers[args.command](args)
 
