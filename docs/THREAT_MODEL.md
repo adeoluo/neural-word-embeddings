@@ -1,21 +1,25 @@
 # Threat Model - Neural Word Embeddings
 
 ## Assets
-- What's worth protecting (data, keys, model, user trust, budget).
+
+- Integrity of the trained vectors and the similarity and analogy results.
 
 ## Trust boundaries
-- Where untrusted input crosses into the system (reference the architecture diagram).
 
-## Threats (STRIDE + LLM-specific)
+- **Query words and parameters are untrusted input to the service.** They are validated
+  against the vocabulary and numeric bounds; there is no path from text to execution.
+
+## Threats and mitigations
 
 | Threat | Vector | Impact | Mitigation |
 |---|---|---|---|
-| Prompt injection | Untrusted content in context / tools | Data exfiltration, unsafe actions | Input/output filtering, tool allow-list, least privilege |
-| Jailbreak | Adversarial user prompt | Policy bypass | System-prompt hardening, output classifier, refusal evaluation |
-| Data exfiltration | Model echoes secrets / PII | Privacy breach | Secret scanning, output redaction, no secrets in context |
-| Excessive cost | Unbounded loops / large inputs | $ blowout | Token/step budgets, rate limits, timeouts |
-| Tool abuse | Agent calls dangerous tool | Destructive action | Approval gates, sandboxing, dry-run |
-| Supply chain | Malicious dependency | Code execution | Pinned dependencies, Dependabot, SBOM |
+| Unbounded results | Huge `k` | Large responses | `k` bounded to 25 |
+| Unknown-word queries | Out-of-vocabulary words | Errors | Validated against the vocabulary with a 400 |
+| Irreproducible training | Unseeded initialization | Flaky vectors | Deterministic, seeded training |
+| Supply-chain compromise | Malicious dependency | Code execution | Zero runtime dependencies; Dependabot and CodeQL in continuous integration |
 
 ## Residual risk
-- What remains after mitigations and why it's acceptable.
+
+Embeddings reflect their training corpus; on natural text they can encode social biases. The
+bundled corpus is synthetic and neutral, and that risk is inherent to the method, not this
+implementation.
