@@ -19,8 +19,7 @@
 
 Word embeddings turned natural language processing into a vector problem: represent each
 word as a dense vector so that geometry encodes meaning. The skip-gram model with negative
-sampling is the method that made this practical. This project implements it **from first
-principles** - the vocabulary, the negative-sampling distribution, and the **gradient of the
+sampling is the method that made this practical. This project implements it **from scratch** - the vocabulary, the negative-sampling distribution, and the **gradient of the
 binary logistic objective derived and applied by hand** - with **zero runtime dependencies**
 and a deterministic, offline test suite. No autodiff, no numeric libraries: just the math.
 
