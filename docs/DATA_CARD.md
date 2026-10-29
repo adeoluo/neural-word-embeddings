@@ -1,22 +1,19 @@
 # Data Card - Neural Word Embeddings
 
-## Sources & provenance
-- Where each dataset came from (links), collection method, dates.
+The project bundles one small, synthetic corpus. There is no external training data and
+nothing is downloaded.
 
-## Licensing
-- License of each source and whether usage complies. Redistribution terms.
+## bundled corpus (`src/neural_word_embeddings/data.py`)
 
-## Composition
-- Size, format, fields, language(s), modality.
-
-## Preprocessing & filtering
-- Cleaning, dedup, PII handling, filtering rules.
-
-## Contamination checks
-- How you ensured evaluation data is not in training / few-shot context.
-
-## Known biases & gaps
-- Representation gaps, label noise, sampling bias.
+- **Provenance:** generated for this project. Words are organized into five semantic
+  categories (royalty, countries, capitals, animals, nature), and sentences co-locate words
+  from the same category so that co-occurrence encodes semantic similarity.
+- **Why this shape:** it makes category-retrieval evaluation meaningful and reproducible
+  offline, where a word's nearest neighbor should be in its own category.
+- **Licensing:** authored by this repository; MIT.
+- **Known gaps:** small, English, synthetic; a demonstration corpus, not natural text.
 
 ## Ethical considerations
-- Consent, sensitive content, privacy.
+
+The corpus is synthetic general-knowledge vocabulary with no personal, sensitive, or
+copyrighted content.
