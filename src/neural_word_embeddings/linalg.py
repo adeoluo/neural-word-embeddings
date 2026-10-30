@@ -17,11 +17,24 @@ def norm(a: Sequence[float]) -> float:
 
 
 def cosine(a: Sequence[float], b: Sequence[float]) -> float:
-    """Cosine similarity, returning 0.0 for a zero vector."""
-    denominator = norm(a) * norm(b)
+    """Cosine similarity, returning 0.0 for a zero vector.
+
+    Each vector is scaled by its largest absolute component before the dot
+    product and norms are formed. Cosine similarity is invariant to positive
+    per-vector scaling, so this changes nothing mathematically while preventing
+    ``norm`` or the dot product from overflowing to ``inf`` (which previously
+    produced ``nan``) on vectors with very large magnitudes.
+    """
+    scale_a = max((abs(x) for x in a), default=0.0)
+    scale_b = max((abs(y) for y in b), default=0.0)
+    if scale_a == 0.0 or scale_b == 0.0:
+        return 0.0
+    sa = [x / scale_a for x in a]
+    sb = [y / scale_b for y in b]
+    denominator = norm(sa) * norm(sb)
     if denominator == 0.0:
         return 0.0
-    return dot(a, b) / denominator
+    return dot(sa, sb) / denominator
 
 
 def add_scaled(target: Vector, source: Sequence[float], scale: float) -> None:

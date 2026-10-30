@@ -6,11 +6,16 @@ import re
 from collections import Counter
 from collections.abc import Iterable, Sequence
 
-_TOKEN = re.compile(r"[a-z]+")
+_TOKEN = re.compile(r"\w+", re.UNICODE)
 
 
 def tokenize(text: str) -> list[str]:
-    """Lowercase and split text into alphabetic word tokens."""
+    """Lowercase and split text into word tokens.
+
+    A word token is a run of word characters (Unicode letters, digits, and
+    underscore). Using ``\\w`` rather than ``[a-z]`` keeps accented text, non-Latin
+    scripts, digits, and underscored identifiers instead of silently dropping them.
+    """
     return _TOKEN.findall(text.lower())
 
 
