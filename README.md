@@ -68,6 +68,28 @@ completely. (Full linear analogies in the `king - man + woman` style need a larg
 corpus; the `analogy` command demonstrates the vector arithmetic, and the honest limit is
 noted below.)
 
+### Scale
+
+`benchmarks/scale.py` exercises the core serving kernel, a brute-force cosine nearest-neighbor
+scan (the same `linalg.cosine` used by `most_similar`), over progressively larger synthetic
+embedding matrices. For each index size it issues a fixed batch of planted queries (a stored
+vector plus tiny noise) and records wall-clock time, query throughput, peak memory
+(`tracemalloc`), and recall@1 of the planted neighbor. Timing is measured without tracemalloc
+(which slows every allocation); peak memory is traced separately around the matrix plus one
+query scan. Throughput halves as the index doubles, the signature of linear brute-force search,
+while recall@1 stays perfect. Run with `uv run python benchmarks/scale.py`.
+
+| Index vectors | Seconds | Throughput (query/sec) | Peak memory (MiB) | Recall@1 |
+|---:|---:|---:|---:|---:|
+| 1000 | 1.09 | 22.86 | 1.04 | 1.000 |
+| 2000 | 2.26 | 11.08 | 2.07 | 1.000 |
+| 4000 | 4.74 | 5.28 | 4.15 | 1.000 |
+| 8000 | 9.81 | 2.55 | 8.30 | 1.000 |
+
+Honest caveat: the vectors are synthetic and this pure-Python implementation is not benchmarked
+against compiled vector-search libraries; a production system would use an approximate index
+rather than a brute-force scan at this size.
+
 ## Demonstration
 
 ```text
