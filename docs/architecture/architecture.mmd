@@ -1,4 +1,4 @@
-flowchart TD
+flowchart LR
     classDef edge     fill:#F59E0B,stroke:#1E293B,color:#1E293B,stroke-width:1px;
     classDef core     fill:#6366F1,stroke:#1E293B,color:#ffffff,stroke-width:1px;
     classDef data     fill:#10B981,stroke:#1E293B,color:#ffffff,stroke-width:1px;
@@ -42,18 +42,16 @@ flowchart TD
     Cli -->|serve| Router
     Cli -->|similar, analogy| Query
     Cli -->|evaluate| Eval
-    Router --> Validate
-    Validate -->|words, k| Query
-    Corpus -->|sentences| Vocab
+    Router -.->|checks| Validate
+    Router -->|words, k| Query
+    Corpus -->|sentences at startup| Vocab
     Vocab -->|token ids| SkipGram
-    Vocab -->|counts| Neg
-    Neg -->|negatives| SkipGram
     Config -.-> SkipGram
-    Linalg -.->|dot, sigmoid| SkipGram
+    SkipGram -.->|draws| Neg
+    SkipGram -.->|dot, sigmoid| Linalg
     SkipGram -->|updates| Center
     SkipGram -->|updates| Context
-    Center -.->|vectors| Query
     SkipGram -.-> Loss
-    Center -.->|top-1 neighbor| Eval
-    Corpus -.->|categories| Eval
+    Query -.->|cosine over| Center
+    Eval -.->|top-1 neighbor| Center
     Router -.->|timings| Metrics
