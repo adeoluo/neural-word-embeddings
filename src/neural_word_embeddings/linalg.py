@@ -3,7 +3,10 @@
 from __future__ import annotations
 
 import math
-from collections.abc import Sequence
+from collections.abc import Collection, Sequence
+
+import numpy as np
+import numpy.typing as npt
 
 Vector = list[float]
 
@@ -48,3 +51,52 @@ def sigmoid(x: float) -> float:
         return 1.0 / (1.0 + math.exp(-x))
     exponent = math.exp(x)
     return exponent / (1.0 + exponent)
+
+
+class CosineIndex:
+    """Cosine nearest-neighbor search over a fixed set of row vectors.
+
+    Each row is scaled by its largest absolute component and then normalized once, as
+    :func:`cosine` does per call, so a query costs one matrix-vector product instead of a
+    Python loop over every row. Scores match :func:`cosine` to floating-point rounding.
+    """
+
+    def __init__(self, rows: Sequence[Sequence[float]]) -> None:
+        self._unit = _unit_rows(np.asarray(rows, dtype=np.float64).reshape(len(rows), -1))
+
+    def __len__(self) -> int:
+        return int(self._unit.shape[0])
+
+    def scores(self, query: Sequence[float]) -> npt.NDArray[np.float64]:
+        """Cosine similarity of ``query`` to every row (0.0 against zero vectors)."""
+        unit = _unit_rows(np.asarray(query, dtype=np.float64).reshape(1, -1))[0]
+        result: npt.NDArray[np.float64] = self._unit @ unit
+        return result
+
+    def nearest(
+        self, query: Sequence[float], k: int, *, exclude: Collection[int] = ()
+    ) -> list[tuple[int, float]]:
+        """The ``k`` rows most similar to ``query``, best first; ties keep row order."""
+        scores = self.scores(query)
+        candidates = np.ones(len(scores), dtype=bool)
+        candidates[list(exclude)] = False
+        rows = np.flatnonzero(candidates)
+        values = scores[rows]
+        if k <= 0 or len(rows) == 0:
+            return []
+        if len(rows) > k:
+            kth = np.partition(values, len(values) - k)[len(values) - k]
+            above = np.flatnonzero(values > kth)
+            tied = np.flatnonzero(values == kth)[: k - len(above)]
+            chosen = np.sort(np.concatenate([above, tied]))
+            rows, values = rows[chosen], values[chosen]
+        order = np.lexsort((rows, -values))
+        return [(int(rows[i]), float(values[i])) for i in order]
+
+
+def _unit_rows(matrix: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
+    scale = np.abs(matrix).max(axis=1, keepdims=True) if matrix.size else matrix
+    with np.errstate(divide="ignore", invalid="ignore"):
+        scaled = np.where(scale > 0.0, matrix / scale, 0.0)
+        norms = np.sqrt((scaled * scaled).sum(axis=1, keepdims=True))
+        return np.where(norms > 0.0, scaled / norms, 0.0)

@@ -81,25 +81,31 @@ noted below.)
 
 ### Scale
 
-`benchmarks/scale.py` exercises the core serving kernel, a brute-force cosine nearest-neighbor
-scan (the same `linalg.cosine` used by `most_similar`), over progressively larger synthetic
-embedding matrices. For each index size it issues a fixed batch of planted queries (a stored
-vector plus tiny noise) and records wall-clock time, query throughput, peak memory
-(`tracemalloc`), and recall@1 of the planted neighbor. Timing is measured without tracemalloc
-(which slows every allocation); peak memory is traced separately around the matrix plus one
-query scan. Throughput halves as the index doubles, the signature of linear brute-force search,
-while recall@1 stays perfect. Run with `uv run python benchmarks/scale.py`.
+`benchmarks/scale.py` exercises the core serving kernel, an exact cosine nearest-neighbor scan
+(`linalg.CosineIndex`, used by `most_similar` and `analogy`), over progressively larger synthetic
+embedding matrices. For each index size it issues 200 planted queries (a stored vector plus tiny
+noise) and records index build time (normalizing the rows once), query time, throughput, peak
+memory (`tracemalloc`) and recall@1 of the planted neighbor. Run with
+`uv run python benchmarks/scale.py`.
 
-| Index vectors | Seconds | Throughput (query/sec) | Peak memory (MiB) | Recall@1 |
-|---:|---:|---:|---:|---:|
-| 1000 | 1.09 | 22.86 | 1.04 | 1.000 |
-| 2000 | 2.26 | 11.08 | 2.07 | 1.000 |
-| 4000 | 4.74 | 5.28 | 4.15 | 1.000 |
-| 8000 | 9.81 | 2.55 | 8.30 | 1.000 |
+| Index vectors | Build (s) | Query time (s) | Throughput (query/sec) | Peak memory (MiB) | Recall@1 |
+|---:|---:|---:|---:|---:|---:|
+| 1,000 | 0.001 | 0.012 | 17,080 | 2.04 | 1.000 |
+| 2,000 | 0.002 | 0.011 | 17,618 | 4.07 | 1.000 |
+| 4,000 | 0.004 | 0.017 | 11,487 | 8.13 | 1.000 |
+| 8,000 | 0.007 | 0.023 | 8,682 | 16.25 | 1.000 |
+| 100,000 | 0.096 | 0.197 | 1,016 | 203.04 | 1.000 |
 
-Caveat: the vectors are synthetic and this Python implementation is not benchmarked
-against compiled vector-search libraries; a production system would use an approximate index
-rather than a brute-force scan at this size.
+The scan used to call the Python `cosine` once per stored vector, which managed 22.9 queries per
+second at 1,000 vectors and 2.6 at 8,000. Normalizing every row once and scoring a query with a
+single matrix-vector product makes it about 750 to 3,400 times faster at those sizes, and an
+exact search over 100,000 vectors now answers 1,016 queries per second. The rankings are the same
+(on the trained model every `most_similar` and `analogy` result matches the old code to 12
+digits). The cost is memory: the normalized copy roughly doubles peak memory, since the model
+keeps its Python vectors for training.
+
+Caveat: the vectors are synthetic and the search is exact; beyond a few hundred thousand vectors
+an approximate index is the right tool.
 
 ## Quickstart
 

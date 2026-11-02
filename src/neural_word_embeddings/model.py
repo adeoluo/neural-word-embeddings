@@ -17,7 +17,7 @@ import random
 from collections.abc import Sequence
 from dataclasses import dataclass
 
-from neural_word_embeddings.linalg import Vector, add_scaled, cosine, dot, sigmoid
+from neural_word_embeddings.linalg import CosineIndex, Vector, add_scaled, cosine, dot, sigmoid
 from neural_word_embeddings.vocabulary import Vocabulary
 
 
@@ -58,6 +58,7 @@ class SkipGramModel:
         ]
         self._context: list[Vector] = [[0.0 for _ in range(config.dimension)] for _ in range(size)]
         self._negative_table = self._build_negative_table(vocabulary)
+        self._index: CosineIndex | None = None  # built on first query, reset by training
 
     def _build_negative_table(self, vocabulary: Vocabulary) -> list[int]:
         # Unigram distribution raised to the 3/4 power, the standard word2vec choice.
@@ -97,6 +98,7 @@ class SkipGramModel:
 
     def train(self, corpus: Sequence[Sequence[int]]) -> list[float]:
         """Train on encoded sentences, returning the mean loss per epoch."""
+        self._index = None
         losses: list[float] = []
         for _ in range(self._config.epochs):
             total_loss = 0.0
@@ -127,16 +129,17 @@ class SkipGramModel:
         """Cosine similarity between two words' vectors."""
         return cosine(self.vector(left), self.vector(right))
 
+    def _search_index(self) -> CosineIndex:
+        if self._index is None:
+            self._index = CosineIndex(self._center)
+        return self._index
+
     def most_similar(self, word: str, *, k: int = 5) -> list[tuple[str, float]]:
         """Return the ``k`` nearest words by cosine similarity."""
-        target = self.vector(word)
-        scored = [
-            (other, cosine(target, self._center[self._vocabulary.index(other)]))
-            for other in self._vocabulary.words
-            if other != word
-        ]
-        scored.sort(key=lambda item: item[1], reverse=True)
-        return scored[:k]
+        position = self._vocabulary.index(word)
+        words = self._vocabulary.words
+        hits = self._search_index().nearest(self._center[position], k, exclude=(position,))
+        return [(words[i], score) for i, score in hits]
 
     def analogy(self, a: str, b: str, c: str, *, k: int = 1) -> list[tuple[str, float]]:
         """Solve ``a is to b as c is to ?`` via vector arithmetic (b - a + c)."""
@@ -144,11 +147,7 @@ class SkipGramModel:
             self.vector(b)[i] - self.vector(a)[i] + self.vector(c)[i]
             for i in range(self._config.dimension)
         ]
-        exclude = {a, b, c}
-        scored = [
-            (word, cosine(target, self._center[self._vocabulary.index(word)]))
-            for word in self._vocabulary.words
-            if word not in exclude
-        ]
-        scored.sort(key=lambda item: item[1], reverse=True)
-        return scored[:k]
+        exclude = {self._vocabulary.index(word) for word in (a, b, c)}
+        words = self._vocabulary.words
+        hits = self._search_index().nearest(target, k, exclude=exclude)
+        return [(words[i], score) for i, score in hits]

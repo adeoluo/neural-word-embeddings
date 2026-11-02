@@ -1,0 +1,36 @@
+# Neural Word Embeddings
+
+> Skip-gram word embeddings with negative sampling, built from scratch: hand-derived gradients, a unigram negative-sampling table, and cosine similarity, nearest-neighbor, and analogy queries.
+
+Languages: Python. License: MIT. Source: https://github.com/adeoluo/neural-word-embeddings
+
+## Docs
+
+- [README](https://github.com/adeoluo/neural-word-embeddings/blob/main/README.md): motivation, architecture, results, quickstart, usage, design decisions, testing, responsible ai, limitations, roadmap
+- [AGENTS.md](https://github.com/adeoluo/neural-word-embeddings/blob/main/AGENTS.md): layout, commands and conventions for changing the code
+- [Architecture diagram](https://github.com/adeoluo/neural-word-embeddings/blob/main/docs/architecture/architecture.mmd): Mermaid source of the component diagram
+- [End-to-End Case Study - From Text to Meaning as Geometry](https://github.com/adeoluo/neural-word-embeddings/blob/main/docs/CASE_STUDY.md)
+- [Data Card - Neural Word Embeddings](https://github.com/adeoluo/neural-word-embeddings/blob/main/docs/DATA_CARD.md)
+- [Definition of Done](https://github.com/adeoluo/neural-word-embeddings/blob/main/docs/DEFINITION_OF_DONE.md)
+- [Evaluation Report - Neural Word Embeddings](https://github.com/adeoluo/neural-word-embeddings/blob/main/docs/EVALUATION_REPORT.md)
+- [System Card - Neural Word Embeddings](https://github.com/adeoluo/neural-word-embeddings/blob/main/docs/MODEL_CARD.md)
+- [Operations Guide - Neural Word Embeddings](https://github.com/adeoluo/neural-word-embeddings/blob/main/docs/OPERATIONS.md)
+- [Scaling and Design Tradeoffs - Neural Word Embeddings](https://github.com/adeoluo/neural-word-embeddings/blob/main/docs/SCALING.md)
+- [Threat Model - Neural Word Embeddings](https://github.com/adeoluo/neural-word-embeddings/blob/main/docs/THREAT_MODEL.md)
+- [ADR-0001: Record architecture decisions](https://github.com/adeoluo/neural-word-embeddings/blob/main/docs/adr/0001-record-architecture-decisions.md)
+- [ADR-0002: Negative sampling instead of a full softmax](https://github.com/adeoluo/neural-word-embeddings/blob/main/docs/adr/0002-negative-sampling.md)
+- [ADR-0003: Hand-derived gradients, no autodiff](https://github.com/adeoluo/neural-word-embeddings/blob/main/docs/adr/0003-hand-derived-gradients.md)
+- [ADR-NNNN: <short title>](https://github.com/adeoluo/neural-word-embeddings/blob/main/docs/adr/template.md)
+- [Changelog](https://github.com/adeoluo/neural-word-embeddings/blob/main/CHANGELOG.md): release history
+
+## Source
+
+- [src/neural_word_embeddings/__init__.py](https://github.com/adeoluo/neural-word-embeddings/blob/main/src/neural_word_embeddings/__init__.py): Neural Word Embeddings - skip-gram with negative sampling from scratch.
+- [src/neural_word_embeddings/cli.py](https://github.com/adeoluo/neural-word-embeddings/blob/main/src/neural_word_embeddings/cli.py): Command line interface for the word-embedding model.
+- [src/neural_word_embeddings/data.py](https://github.com/adeoluo/neural-word-embeddings/blob/main/src/neural_word_embeddings/data.py): A bundled, semantically structured corpus for demonstration and evaluation.
+- [src/neural_word_embeddings/evaluation.py](https://github.com/adeoluo/neural-word-embeddings/blob/main/src/neural_word_embeddings/evaluation.py): Evaluate embeddings by category-retrieval accuracy.
+- [src/neural_word_embeddings/linalg.py](https://github.com/adeoluo/neural-word-embeddings/blob/main/src/neural_word_embeddings/linalg.py): Minimal from-scratch vector operations for the embedding model.
+- [src/neural_word_embeddings/model.py](https://github.com/adeoluo/neural-word-embeddings/blob/main/src/neural_word_embeddings/model.py): Skip-gram word embeddings with negative sampling, trained from scratch.
+- [src/neural_word_embeddings/observability.py](https://github.com/adeoluo/neural-word-embeddings/blob/main/src/neural_word_embeddings/observability.py): In-process request metrics for the HTTP service (Prometheus text exposition).
+- [src/neural_word_embeddings/service.py](https://github.com/adeoluo/neural-word-embeddings/blob/main/src/neural_word_embeddings/service.py): A standard-library HTTP service exposing the trained word embeddings.
+- [src/neural_word_embeddings/vocabulary.py](https://github.com/adeoluo/neural-word-embeddings/blob/main/src/neural_word_embeddings/vocabulary.py): Deterministic tokenization and vocabulary construction.
