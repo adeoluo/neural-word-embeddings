@@ -28,10 +28,14 @@ suite. There is no autodiff: every gradient is written out explicitly.
   <img src="docs/architecture/architecture.svg" alt="Architecture diagram" width="860">
 </p>
 
-A frequency-ordered **vocabulary** feeds the **skip-gram** trainer, which learns two
-embedding matrices by pushing each center word toward its true context words and away from a
-few sampled negatives. The center matrix is the word representation; the service answers
-similarity and analogy queries from it. See the [ADRs](docs/adr/) for the key decisions.
+<sub>Legend: amber = entry points and external systems, indigo = core logic, green = data and state, blue = validation and control, grey = observability and outputs.</sub>
+
+The bundled corpus is tokenized into a frequency-ordered **vocabulary**, which feeds the
+**skip-gram** trainer and the unigram-to-the-3/4 negative sampler. Training runs once at
+startup and learns two embedding matrices by pushing each center word toward its true context
+words and away from a few sampled negatives. The center matrix is the word representation: the
+CLI and the validated HTTP routes answer similarity and analogy queries from it by cosine
+ranking, and the evaluation measures category retrieval accuracy against a random baseline. See the [ADRs](docs/adr/) for the key decisions.
 
 ### How it works
 

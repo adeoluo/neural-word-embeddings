@@ -1,16 +1,3 @@
----
-title: System Architecture - Neural Word Embeddings
-config:
-  theme: base
-  themeVariables:
-    fontFamily: "Inter, system-ui, sans-serif"
-    primaryColor: "#F8FAFC"
-    primaryBorderColor: "#1E293B"
-    primaryTextColor: "#1E293B"
-    lineColor: "#64748B"
-    clusterBkg: "#EEF2FF"
-    clusterBorder: "#94A3B8"
----
 flowchart TD
     classDef edge     fill:#F59E0B,stroke:#1E293B,color:#1E293B,stroke-width:1px;
     classDef core     fill:#6366F1,stroke:#1E293B,color:#ffffff,stroke-width:1px;
@@ -18,26 +5,55 @@ flowchart TD
     classDef control  fill:#0EA5E9,stroke:#1E293B,color:#ffffff,stroke-width:1px;
     classDef obs      fill:#CBD5E1,stroke:#1E293B,color:#1E293B,stroke-width:1px;
 
-    Client([Client]):::edge
+    Client(["HTTP client<br/>JSON query"]):::edge
+    Cli(["CLI<br/>evaluate, similar, analogy, serve"]):::edge
 
-    subgraph Train["Training (once at startup)"]
+    subgraph Io["Interfaces (stdlib HTTP, stateless)"]
         direction TB
-        Corpus[(Structured corpus)]:::data
-        Vocab[Vocabulary<br/>frequency-ordered]:::core
-        SkipGram["Skip-gram + negative sampling<br/>hand-derived gradients"]:::core
+        Router["Request router<br/>/health, /ready, /similar, /analogy"]:::core
+        Validate["Request validation<br/>known words, k from 1 to 25"]:::control
     end
 
-    subgraph Edge["Service layer (stdlib HTTP, stateless)"]
+    subgraph Core["Core logic (training once at startup, queries)"]
         direction TB
-        Router["Router<br/>/health | /ready | /metrics | /similar | /analogy"]:::core
-        Validate["Validation<br/>known word, bounded k"]:::control
+        Config["TrainingConfig<br/>window, negatives, epochs, seed"]:::control
+        Vocab["Tokenizer and vocabulary<br/>frequency-ordered"]:::core
+        Neg["Negative sampler<br/>unigram counts to the 3/4 power"]:::core
+        SkipGram["Skip-gram SGD<br/>hand-derived logistic gradients"]:::core
+        Linalg["linalg<br/>dot, cosine, stable sigmoid"]:::core
+        Query["Nearest neighbors and analogy<br/>cosine ranking"]:::core
     end
 
-    Vectors[(Embedding matrix)]:::data
-    Result["Nearest neighbors / analogy<br/>+ cosine scores"]:::obs
+    subgraph State["Data and state (in memory)"]
+        direction TB
+        Corpus[("Bundled corpus<br/>five semantic categories")]:::data
+        Center[("Center matrix<br/>word vectors")]:::data
+        Context[("Context matrix<br/>training only")]:::data
+    end
 
-    Corpus --> Vocab --> SkipGram -->|center vectors| Vectors
-    Client -->|JSON request| Router --> Validate
-    Validate -->|word| Vectors
-    Vectors -->|cosine ranking| Result
-    Result --> Router -->|JSON response| Client
+    subgraph Obs["Evaluation and observability"]
+        direction TB
+        Loss["Per-epoch training loss"]:::obs
+        Eval["Category retrieval accuracy<br/>vs random baseline"]:::obs
+        Metrics["/metrics<br/>Prometheus counts, latency"]:::obs
+    end
+
+    Client -->|POST JSON| Router
+    Cli -->|serve| Router
+    Cli -->|similar, analogy| Query
+    Cli -->|evaluate| Eval
+    Router --> Validate
+    Validate -->|words, k| Query
+    Corpus -->|sentences| Vocab
+    Vocab -->|token ids| SkipGram
+    Vocab -->|counts| Neg
+    Neg -->|negatives| SkipGram
+    Config -.-> SkipGram
+    Linalg -.->|dot, sigmoid| SkipGram
+    SkipGram -->|updates| Center
+    SkipGram -->|updates| Context
+    Center -.->|vectors| Query
+    SkipGram -.-> Loss
+    Center -.->|top-1 neighbor| Eval
+    Corpus -.->|categories| Eval
+    Router -.->|timings| Metrics
