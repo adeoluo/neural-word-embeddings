@@ -8,7 +8,7 @@ The operational contract of the embedding service.
 uv run python -m neural_word_embeddings serve --host 0.0.0.0 --port 8000
 ```
 
-A standard-library HTTP server with **zero runtime dependencies**. The embeddings are trained
+A standard-library HTTP server. The embeddings are trained
 once at startup and then serve stateless queries.
 
 ## Endpoints

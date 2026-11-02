@@ -1,4 +1,4 @@
-"""Minimal dependency-free vector operations for the embedding model."""
+"""Minimal from-scratch vector operations for the embedding model."""
 
 from __future__ import annotations
 

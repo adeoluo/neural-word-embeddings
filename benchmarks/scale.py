@@ -12,7 +12,7 @@ and recall@1 of the planted nearest neighbor as the correctness metric.
 Timing is measured without tracemalloc (which otherwise slows every allocation);
 peak memory is traced separately around the matrix plus a single query scan,
 which is faithful because queries are scored one at a time. The vectors are
-synthetic. This pure-Python from-scratch implementation is not competitive on
+synthetic. This from-scratch Python implementation is not competitive on
 wall-clock time with compiled vector-search libraries; the goal is to show how
 the brute-force scan scales with the index size. Deterministic and offline; run:
 
@@ -104,7 +104,7 @@ def run_scale(sizes: tuple[int, ...] = WORKLOAD_SIZES) -> list[ScaleRow]:
 
 def main() -> None:
     print("Synthetic embedding matrices; from-scratch brute-force cosine search.")
-    print("Pure-Python search; not benchmarked against compiled vector-search libraries.")
+    print("Interpreted-Python search; not benchmarked against compiled vector-search libraries.")
     print(f"{'index':>8}  {'seconds':>9}  {'query/sec':>10}  {'peak MiB':>9}  {'recall@1':>9}")
     for row in run_scale():
         print(

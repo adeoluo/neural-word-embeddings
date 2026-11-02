@@ -1,4 +1,4 @@
-"""A dependency-free HTTP service exposing the trained word embeddings.
+"""A standard-library HTTP service exposing the trained word embeddings.
 
 The service trains the embeddings once at startup over the bundled corpus and
 then answers similarity, nearest-neighbor, and analogy queries. A pure handler is

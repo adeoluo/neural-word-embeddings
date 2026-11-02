@@ -18,11 +18,11 @@ center and context vectors.
 
 - **An autodiff framework (PyTorch, JAX).** Convenient and scalable, but a large dependency
   and opaque for a from-scratch reference.
-- **Numerical gradients.** Dependency-free but slow and imprecise; the analytic gradient is
+- **Numerical gradients.** Simple to implement but slow and imprecise; the analytic gradient is
   simple here.
 
 ## Consequences
 
-- The project has zero runtime dependencies and the full training math is visible.
+- The full training math is visible and each gradient is directly testable.
 - The implementation is specific to this objective; a new loss needs a new derivation.
-- Pure-Python updates limit scale, which is documented.
+- Updates run in interpreted Python, which limits scale; this is documented.

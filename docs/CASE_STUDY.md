@@ -5,7 +5,7 @@ How a corpus of plain sentences becomes a vector space where similarity is dista
 ## Scenario
 
 A team has a corpus and wants to find, for any word, the words most related to it, with no
-pretrained model and no dependencies.
+pretrained model.
 
 ## Training and querying
 

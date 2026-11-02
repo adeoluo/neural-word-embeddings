@@ -5,12 +5,10 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/adeoluo/neural-word-embeddings/actions/workflows/ci.yml"><img alt="Continuous integration" src="https://github.com/adeoluo/neural-word-embeddings/actions/workflows/ci.yml/badge.svg"></a>
-  <img alt="Coverage" src="https://img.shields.io/badge/coverage-92%25-brightgreen">
+  <a href="https://github.com/adeoluo/neural-word-embeddings/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/adeoluo/neural-word-embeddings/actions/workflows/ci.yml/badge.svg"></a>
+  <a href="https://github.com/adeoluo/neural-word-embeddings/releases"><img alt="Release" src="https://img.shields.io/github/v/release/adeoluo/neural-word-embeddings"></a>
   <img alt="Python" src="https://img.shields.io/badge/python-3.11%20%7C%203.12-blue">
-  <img alt="Type checked" src="https://img.shields.io/badge/mypy-strict-blue">
-  <img alt="Runtime dependencies" src="https://img.shields.io/badge/runtime%20deps-0-brightgreen">
-  <img alt="License" src="https://img.shields.io/badge/license-MIT-green">
+  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-green"></a>
 </p>
 
 ---
@@ -19,14 +17,15 @@
 
 Word embeddings turned natural language processing into a vector problem: represent each
 word as a dense vector so that geometry encodes meaning. The skip-gram model with negative
-sampling is the method that made this practical. This project implements it **from scratch** - the vocabulary, the negative-sampling distribution, and the **gradient of the
-binary logistic objective derived and applied by hand** - with **zero runtime dependencies**
-and a deterministic, offline test suite. No autodiff, no numeric libraries: just the math.
+sampling is the method that made this practical. This project implements it **from scratch**
+(the vocabulary, the negative-sampling distribution, and the **gradient of the binary
+logistic objective derived and applied by hand**) with a deterministic, offline test
+suite. There is no autodiff: every gradient is written out explicitly.
 
 ## Architecture
 
 <p align="center">
-  <img src="docs/architecture/architecture.svg" alt="System architecture" width="900">
+  <img src="docs/architecture/architecture.svg" alt="Architecture diagram" width="860">
 </p>
 
 A frequency-ordered **vocabulary** feeds the **skip-gram** trainer, which learns two
@@ -34,7 +33,7 @@ embedding matrices by pushing each center word toward its true context words and
 few sampled negatives. The center matrix is the word representation; the service answers
 similarity and analogy queries from it. See the [ADRs](docs/adr/) for the key decisions.
 
-## How it works
+### How it works
 
 For each (center, context) pair the model maximizes the probability that the pair is real and
 minimizes it for a few random "negative" pairs. The objective for one pair is the binary
@@ -51,6 +50,14 @@ context += gradient * center
 Negatives are drawn from the **unigram distribution raised to the 3/4 power**, the standard
 word2vec choice that samples frequent words often but not overwhelmingly.
 
+### Components
+
+- **vocabulary**: tokenization and a frequency-ordered vocabulary.
+- **linalg**: from-scratch dot product, cosine, and a stable sigmoid.
+- **model**: skip-gram with negative sampling and hand-derived gradients.
+- **data**: a semantically structured corpus for evaluation.
+- **evaluation**: category-retrieval accuracy against a random baseline.
+
 ## Results
 
 > Reproduce with `python -m neural_word_embeddings evaluate`. Category-retrieval accuracy:
@@ -65,7 +72,7 @@ The trained embeddings place **every** word's nearest neighbor in its own semant
 (royalty, countries, capitals, animals, nature), against a random baseline of 0.176. This is
 the standard intrinsic evaluation of embeddings, and the from-scratch model passes it
 completely. (Full linear analogies in the `king - man + woman` style need a large natural
-corpus; the `analogy` command demonstrates the vector arithmetic, and the honest limit is
+corpus; the `analogy` command demonstrates the vector arithmetic, and the limit is
 noted below.)
 
 ### Scale
@@ -86,21 +93,9 @@ while recall@1 stays perfect. Run with `uv run python benchmarks/scale.py`.
 | 4000 | 4.74 | 5.28 | 4.15 | 1.000 |
 | 8000 | 9.81 | 2.55 | 8.30 | 1.000 |
 
-Honest caveat: the vectors are synthetic and this pure-Python implementation is not benchmarked
+Caveat: the vectors are synthetic and this Python implementation is not benchmarked
 against compiled vector-search libraries; a production system would use an approximate index
 rather than a brute-force scan at this size.
-
-## Demonstration
-
-```text
-$ python -m neural_word_embeddings similar king
-Nearest words to 'king':
-  queen        0.94
-  prince       0.91
-  throne       0.88
-  palace       0.85
-  crown        0.83
-```
 
 ## Quickstart
 
@@ -113,6 +108,22 @@ python -m neural_word_embeddings evaluate                 # category-retrieval a
 python -m neural_word_embeddings similar queen            # nearest neighbors
 python -m neural_word_embeddings analogy king queen prince
 ```
+
+## Usage
+
+### Demonstration
+
+```text
+$ python -m neural_word_embeddings similar king
+Nearest words to 'king':
+  queen        0.94
+  prince       0.91
+  throne       0.88
+  palace       0.85
+  crown        0.83
+```
+
+### Library
 
 Train on your own text:
 
@@ -127,9 +138,9 @@ model.train([vocab.encode(tokenize(s)) for s in sentences])
 print(model.most_similar("cat", k=5))
 ```
 
-## Running the service
+### HTTP service
 
-A dependency-free HTTP service trains the embeddings once at startup and serves queries:
+A standard-library HTTP service trains the embeddings once at startup and serves queries:
 
 ```bash
 python -m neural_word_embeddings serve --port 8000
@@ -146,22 +157,38 @@ error, and latency metrics in Prometheus text format). A production-style stress
 scaling path and tradeoffs are in [docs/SCALING.md](docs/SCALING.md) and a full walk-through
 is in the [case study](docs/CASE_STUDY.md).
 
-## Components
-
-- **vocabulary** - tokenization and a frequency-ordered vocabulary.
-- **linalg** - dependency-free dot product, cosine, and a stable sigmoid.
-- **model** - skip-gram with negative sampling and hand-derived gradients.
-- **data** - a semantically structured corpus for evaluation.
-- **evaluation** - category-retrieval accuracy against a random baseline.
-
 ## Design decisions
 
 - **Negative sampling, not full softmax.** A binary logistic objective over a few negatives
   avoids a vocabulary-sized normalization and is what makes training tractable.
   ([ADR-0002](docs/adr/0002-negative-sampling.md))
 - **Hand-derived gradients, no autodiff.** The gradient of the logistic objective is written
-  out and applied directly, keeping the project dependency-free and fully transparent.
+  out and applied directly, keeping the training math explicit and fully transparent.
   ([ADR-0003](docs/adr/0003-hand-derived-gradients.md))
+- **Recording decisions.** ([ADR-0001](docs/adr/0001-record-architecture-decisions.md))
+
+## Testing
+
+```bash
+make test                     # uv run pytest
+make coverage                 # pytest with an 80% coverage gate
+```
+
+The suite has 22 deterministic, offline tests in three modules under `tests/`:
+
+- **Core** (`test_core.py`): tokenization (including Unicode digits and underscores),
+  vocabulary frequency ordering and `min_count`, sigmoid bounds, cosine identity and
+  stability at large magnitudes, config validation, that training reduces the loss, and that
+  similar words cluster.
+- **Evaluation and CLI** (`test_evaluation.py`): the bundled corpus is deterministic,
+  retrieval beats the random baseline, every category word retrieves within its category, and
+  the `evaluate`, `similar`, and `analogy` commands.
+- **HTTP service** (`test_service.py`): health and readiness, similarity and analogy
+  queries, rejection of unknown words and bad `k`, metrics, and unknown routes.
+
+CI (`.github/workflows/ci.yml`) runs `ruff format --check`, `ruff check`, `mypy src`, and
+`pytest` with an 80% coverage gate on Python 3.11 and 3.12, then builds the package and the
+Docker image.
 
 ## Responsible AI
 
@@ -172,9 +199,9 @@ is in the [case study](docs/CASE_STUDY.md).
 ## Limitations
 
 - Full linear analogies (`king - man + woman = queen`) need a large natural corpus and many
-  dimensions; on the small bundled corpus the model nails nearest-neighbor retrieval but not
-  every analogy, which the evaluation reports honestly.
-- Training is pure Python, so it is for learning and modest corpora, not web-scale text.
+  dimensions; on the small bundled corpus the model achieves nearest-neighbor retrieval but not
+  every analogy, which the evaluation reports.
+- Training runs in interpreted Python, so it is for learning and modest corpora, not web-scale text.
 - The vocabulary is closed; out-of-vocabulary words are dropped.
 
 ## Roadmap
@@ -185,5 +212,4 @@ is in the [case study](docs/CASE_STUDY.md).
 
 ## License
 
-[MIT](LICENSE). Part of an artificial intelligence engineering portfolio by
-[adeoluo](https://github.com/adeoluo).
+Released under the [MIT License](LICENSE).

@@ -13,7 +13,7 @@ and analogy queries over a standard-library HTTP service. Deterministic for a fi
 |---|---|---|
 | One process | Query CPU, global interpreter lock | One replica per core |
 | Large vocabulary | Linear nearest-neighbor scan | Add an approximate-nearest-neighbor index |
-| Large corpus | Pure-Python training | Train offline; load precomputed vectors |
+| Large corpus | Interpreted-Python training | Train offline; load precomputed vectors |
 | Out-of-vocabulary words | Closed vocabulary | Add subword units |
 | Many replicas | Repeated training at startup | Train once; ship vectors as an artifact |
 
@@ -22,9 +22,9 @@ and analogy queries over a standard-library HTTP service. Deterministic for a fi
 - **Negative sampling vs full softmax.** Negative sampling makes training tractable and is the
   standard word2vec objective, at the cost of approximating the softmax gradient. Full softmax
   is exact but scales with vocabulary size.
-- **Hand-derived gradients vs autodiff.** Hand gradients keep the project dependency-free and
-  transparent but are specific to this objective; autodiff generalizes at the cost of a heavy
-  dependency.
+- **Hand-derived gradients vs autodiff.** Hand gradients keep the training math explicit and
+  transparent but are specific to this objective; autodiff generalizes at the cost of a
+  framework and its runtime.
 - **Linear scan vs an index.** A full cosine scan is exact and simple for a small vocabulary;
   an approximate index trades a little recall for sublinear query time at scale.
 - **Static vs contextual embeddings.** Static vectors are cheap and interpretable but assign

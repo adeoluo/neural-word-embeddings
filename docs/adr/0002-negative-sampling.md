@@ -22,6 +22,6 @@ push the center vector toward the true context and away from the negatives.
 
 ## Consequences
 
-- Each update touches a handful of vectors, so training is fast and dependency-free.
+- Each update touches a handful of vectors, so training is fast and simple to implement.
 - The negative distribution (unigram^0.75) balances sampling frequent and rare words.
 - The approximation is to the softmax gradient, which is the accepted word2vec tradeoff.

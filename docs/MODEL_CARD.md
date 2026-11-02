@@ -15,7 +15,7 @@
 
 ## Out-of-scope / prohibited use
 
-- Not for web-scale corpora (pure-Python training).
+- Not for web-scale corpora (training runs in interpreted Python).
 - Out-of-vocabulary words are unsupported.
 
 ## Performance

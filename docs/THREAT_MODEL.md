@@ -16,7 +16,7 @@
 | Unbounded results | Huge `k` | Large responses | `k` bounded to 25 |
 | Unknown-word queries | Out-of-vocabulary words | Errors | Validated against the vocabulary with a 400 |
 | Irreproducible training | Unseeded initialization | Flaky vectors | Deterministic, seeded training |
-| Supply-chain compromise | Malicious dependency | Code execution | Zero runtime dependencies; Dependabot and CodeQL in continuous integration |
+| Supply-chain compromise | Malicious dependency | Code execution | No third-party runtime packages; Dependabot and CodeQL in continuous integration |
 
 ## Residual risk
 
