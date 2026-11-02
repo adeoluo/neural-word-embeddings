@@ -5,53 +5,43 @@ flowchart LR
     classDef control  fill:#0EA5E9,stroke:#1E293B,color:#ffffff,stroke-width:1px;
     classDef obs      fill:#CBD5E1,stroke:#1E293B,color:#1E293B,stroke-width:1px;
 
-    Client(["HTTP client<br/>JSON query"]):::edge
-    Cli(["CLI<br/>evaluate, similar, analogy, serve"]):::edge
-
-    subgraph Io["Interfaces (stdlib HTTP, stateless)"]
+    subgraph Interfaces["Interfaces"]
         direction TB
-        Router["Request router<br/>/health, /ready, /similar, /analogy"]:::core
-        Validate["Request validation<br/>known words, k from 1 to 25"]:::control
+        Cli(["CLI<br/>evaluate, similar, serve"]):::edge
+        Client(["HTTP client<br/>JSON query"]):::edge
+        Router["HTTP router<br/>/similar, /analogy"]:::core
+        Validate["Validation<br/>known words, k 1 to 25"]:::control
+        Cli ~~~ Client --> Router --> Validate
     end
 
-    subgraph Core["Core logic (training once at startup, queries)"]
+    subgraph Core["Training and queries"]
         direction TB
-        Config["TrainingConfig<br/>window, negatives, epochs, seed"]:::control
-        Vocab["Tokenizer and vocabulary<br/>frequency-ordered"]:::core
-        Neg["Negative sampler<br/>unigram counts to the 3/4 power"]:::core
-        SkipGram["Skip-gram SGD<br/>hand-derived logistic gradients"]:::core
-        Linalg["linalg<br/>dot, cosine, stable sigmoid"]:::core
-        Query["Nearest neighbors and analogy<br/>cosine ranking"]:::core
+        Config["TrainingConfig<br/>window, negatives, seed"]:::control
+        Vocab["Vocabulary<br/>frequency-ordered"]:::core
+        Neg["Negative sampler<br/>unigram to the 3/4"]:::core
+        SkipGram["Skip-gram SGD<br/>hand-derived gradients"]:::core
+        Query["Similarity, analogy<br/>cosine ranking"]:::core
+        Config ~~~ Vocab --> Neg --> SkipGram ~~~ Query
     end
 
-    subgraph State["Data and state (in memory)"]
+    subgraph State["Data and state"]
         direction TB
-        Corpus[("Bundled corpus<br/>five semantic categories")]:::data
+        Corpus[("Bundled corpus<br/>five categories")]:::data
         Center[("Center matrix<br/>word vectors")]:::data
         Context[("Context matrix<br/>training only")]:::data
+        Corpus ~~~ Center ~~~ Context
     end
 
-    subgraph Obs["Evaluation and observability"]
+    subgraph Obs["Evaluation and outputs"]
         direction TB
-        Loss["Per-epoch training loss"]:::obs
-        Eval["Category retrieval accuracy<br/>vs random baseline"]:::obs
-        Metrics["/metrics<br/>Prometheus counts, latency"]:::obs
+        Results["Neighbors JSON<br/>words and cosines"]:::obs
+        Loss["Training loss<br/>per epoch"]:::obs
+        Eval["Category retrieval<br/>vs random baseline"]:::obs
+        Metrics["/metrics<br/>Prometheus text"]:::obs
+        Results ~~~ Loss ~~~ Eval ~~~ Metrics
     end
 
-    Client -->|POST JSON| Router
-    Cli -->|serve| Router
-    Cli -->|similar, analogy| Query
-    Cli -->|evaluate| Eval
-    Router -.->|checks| Validate
-    Router -->|words, k| Query
-    Corpus -->|sentences at startup| Vocab
-    Vocab -->|token ids| SkipGram
-    Config -.-> SkipGram
-    SkipGram -.->|draws| Neg
-    SkipGram -.->|dot, sigmoid| Linalg
-    SkipGram -->|updates| Center
-    SkipGram -->|updates| Context
-    SkipGram -.-> Loss
-    Query -.->|cosine over| Center
-    Eval -.->|top-1 neighbor| Center
-    Router -.->|timings| Metrics
+    Interfaces -->|words, k| Core
+    Core -->|reads, updates| State
+    State -.->|vectors| Obs
+    Core -->|answers, loss| Obs
