@@ -171,6 +171,18 @@ Nearest neighbors and an analogy from the trained embeddings.
   <img src="docs/demo/similar.gif" alt="Nearest neighbors and an analogy from the trained embeddings" width="860">
 </p>
 
+The HTTP service: nearest neighbors and an analogy.
+
+<p align="center">
+  <img src="docs/demo/http.gif" alt="The HTTP service: nearest neighbors and an analogy" width="860">
+</p>
+
+Word-similarity evaluation of the trained embeddings.
+
+<p align="center">
+  <img src="docs/demo/evaluate.gif" alt="Word-similarity evaluation of the trained embeddings" width="860">
+</p>
+
 ## Design decisions
 
 - **Negative sampling, not full softmax.** A binary logistic objective over a few negatives
