@@ -161,6 +161,16 @@ error, and latency metrics in Prometheus text format). A production-style stress
 scaling path and tradeoffs are in [docs/SCALING.md](docs/SCALING.md) and a full walk-through
 is in the [case study](docs/CASE_STUDY.md).
 
+### Demos
+
+Recorded from real runs with [vhs](https://github.com/charmbracelet/vhs); each tape is in `docs/demo/`.
+
+Nearest neighbors and an analogy from the trained embeddings.
+
+<p align="center">
+  <img src="docs/demo/similar.gif" alt="Nearest neighbors and an analogy from the trained embeddings" width="860">
+</p>
+
 ## Design decisions
 
 - **Negative sampling, not full softmax.** A binary logistic objective over a few negatives
