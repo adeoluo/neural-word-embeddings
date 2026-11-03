@@ -4,7 +4,7 @@ All notable changes to this project are documented here. The file is generated
 from Conventional Commits by [git-cliff](https://git-cliff.org) when a release is cut
 with `make cut-release`.
 
-## Unreleased
+## [0.1.0] 2026-11-03
 
 ### Features
 
@@ -16,6 +16,10 @@ with `make cut-release`.
 
 - Keep Unicode tokens and stabilize cosine for large vectors (#11)
 
+### Performance
+
+- Vectorized exact cosine search for most_similar and analogy (#3)
+
 ### Documentation
 
 - Use plain, factual wording (#9)
@@ -26,6 +30,7 @@ with `make cut-release`.
 - Compact horizontal architecture diagram
 - Recorded demos of more commands, with their vhs tapes (#1)
 - Recorded demos of the HTTP service and more commands (#2)
+- Describe the supply chain accurately (#4)
 
 ### Build and CI
 
