@@ -1,10 +1,22 @@
 cff-version: 1.2.0
-message: "If you use this work, please cite it."
+message: "If you use this software, please cite it as below."
+type: software
 title: "Neural Word Embeddings"
+abstract: "Skip-gram word embeddings with negative sampling from scratch: hand-derived gradients, a unigram negative-sampling table, and category-retrieval evaluation."
 authors:
   - family-names: "Ogunnoiki"
     given-names: "Adeolu"
-version: 0.1.0
-date-released: 2026-01-01
+version: "0.1.0"
+date-released: "2026-11-03"
 license: MIT
+repository-code: "https://github.com/adeoluo/neural-word-embeddings"
 url: "https://github.com/adeoluo/neural-word-embeddings"
+keywords:
+  - "from-scratch"
+  - "negative-sampling"
+  - "nlp"
+  - "python"
+  - "representation-learning"
+  - "skip-gram"
+  - "word-embeddings"
+  - "word2vec"
